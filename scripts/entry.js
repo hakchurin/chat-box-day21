@@ -1,4 +1,5 @@
 import $ from 'jquery';
+import moment from 'moment';
 
 $('.second-page').addClass('hidden');
 
@@ -16,8 +17,8 @@ loginBtn.on('click', function() {
     user.username = loginInput.val();
     $('.second-page').removeClass('hidden ');
     $('.first-page').addClass('hidden');
-    console.log(user.username);
-    //messageDisplay();
+
+    messageDisplay();
 });
 
 
@@ -27,34 +28,26 @@ var messageBtn = $('#message-btn');
 var messageContent = $('.message-container');
 var outputContent = $('.sent-messages');
 
-import moment from 'moment';
-function MessageConstructor(message) {
+
+
+function MessageConstructor(message, user) {
     this.message = message;
-    //this.sender = sender;
+    this.sender = user.username;
     this.stamp = moment().format("MM-DD-YYYY");
 }
 
 
 
-
-
 $(messageBtn).on('click', function() {
-    var message = new MessageConstructor(messageInput.val());
-    var $li = $('<li>' + messageInput.val() + '</li>');
-    //var timeStamp = stamp._id.message;
-    function clearField(input,val) {
-      if(messageInput.value == val)
-         messageInput.value="";
-       }
+    var message = new MessageConstructor(messageInput.val(), user);
+    var $li = $(`<li>${message.sender} ${message.stamp}  ${message.message}</li>`);
+
+    console.log(message);
 
 
+    $(messageInput).val('');
 
     messageContent.append($li);
-    outputContent.append(message);
-    //outputContent.append(timeStamp);
-    console.log(timeStamp);
-
-    messageDisplay();
     message.save();
 });
 
@@ -62,65 +55,79 @@ $(messageBtn).on('click', function() {
 
 
 
-
 MessageConstructor.prototype.save = function() {
-  $.ajax({
-    dataType: 'json',
-    url: 'http://tiny-za-server.herokuapp.com/collections/hakchurinchat',
-    type: 'POST',
-    contentType: 'application/json',
-    data: JSON.stringify(this),
-    success: response => {
-      // message = stamp._id;
-    console.log(response);
-      }
-  });
+    $.ajax({
+        dataType: 'json',
+        url: 'http://tiny-za-server.herokuapp.com/collections/hakchurinchat',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(this),
+        success: (response) => {
+
+
+        }
+    });
 };
 
 
+
 function messageDisplay() {
-    // console.log("test");
+
     $.ajax({
-         dataType: 'json',
+        dataType: 'json',
         url: 'https://tiny-za-server.herokuapp.com/collections/hakchurinchat',
         type: 'GET',
         success: function(response) {
 
-            response.forEach(function(display) {
-                $(messageContent).append($('<li></li>').message);
+            response.forEach(function(messageObjs) {
+                    let $messageBox = $(`
+                      <li>
+                        <h3>${messageObjs.sender}</h3>
+                        <p>${messageObjs.message}</p>
+                      </li>
+                      `);
+                    $('.message-container').append($messageBox);
+                    console.log(messageObjs);
 
-            });
-          }
-          });
+                }
+
+            );
         }
+    });
+}
+
+
+
+
+
 
 //             // do something to display messages to the user
 //             // get a container then add stuff to it
 //             // append is add stuff
 
 
-//
+
 
 // clearAPI();
 
 function clearAPI() {
- console.log('clearing');
- $.ajax({
-   url: 'https://tiny-za-server.herokuapp.com/collections/hakchurinchat',
-   type: 'GET',
-   success: function(response){
-     response.forEach(function(user){
-       $.ajax({
-         url: 'https://tiny-za-server.herokuapp.com/collections/hakchurinchat/' + user._id,
-         type: 'DELETE',
-         contentType: 'application/json',
-         success: function(response) {
-           console.log('DELETED', user._id);
-         }
-       });
-     });
-   }
- });
+    console.log('clearing');
+    $.ajax({
+        url: 'https://tiny-za-server.herokuapp.com/collections/hakchurinchat',
+        type: 'GET',
+        success: function(response) {
+            response.forEach(function(user) {
+                $.ajax({
+                    url: 'https://tiny-za-server.herokuapp.com/collections/hakchurinchat/' + user._id,
+                    type: 'DELETE',
+                    contentType: 'application/json',
+                    success: function(response) {
+                        console.log('DELETED', user._id);
+                    }
+                });
+            });
+        }
+    });
 }
 
 
